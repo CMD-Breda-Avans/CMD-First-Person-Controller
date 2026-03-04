@@ -1,5 +1,4 @@
-/* 
- * PLAYER MOVE
+/* * PLAYER MOVE
  * Moves the Player object according to key inputs.
  * Crouching and jumping are optional
  */
@@ -7,6 +6,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerMove : MonoBehaviour
 {
@@ -19,12 +19,13 @@ public class PlayerMove : MonoBehaviour
     public bool crouchEnabled;
     public float crouchHeight = 0.4f;
     private float normalHeight;
-    public KeyCode forwardKey = KeyCode.W;
-    public KeyCode backKey = KeyCode.S;
-    public KeyCode leftKey = KeyCode.A;
-    public KeyCode rightKey = KeyCode.D;
-    public KeyCode jumpKey = KeyCode.Space;
-    public KeyCode crouchKey = KeyCode.LeftControl;
+    
+    public Key forwardKey = Key.W;
+    public Key backKey = Key.S;
+    public Key leftKey = Key.A;
+    public Key rightKey = Key.D;
+    public Key jumpKey = Key.Space;
+    public Key crouchKey = Key.LeftCtrl;
 
     void Start()
     {
@@ -34,36 +35,38 @@ public class PlayerMove : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (Keyboard.current == null) return;
+
         Vector3 movement = new Vector3();
         bool hasInput = false;
 
         // Walking
-        if (Input.GetKey(forwardKey))
+        if (Keyboard.current[forwardKey].isPressed)
         {
             movement += transform.forward * walkingSpeed;
             hasInput = true;
         }
 
-        if (Input.GetKey(backKey))
+        if (Keyboard.current[backKey].isPressed)
         {
             movement += -transform.forward * walkingSpeed;
             hasInput = true;
         }
 
-        if (Input.GetKey(rightKey))
+        if (Keyboard.current[rightKey].isPressed)
         {
             movement += transform.right * walkingSpeed;
             hasInput = true;
         }
 
-        if (Input.GetKey(leftKey))
+        if (Keyboard.current[leftKey].isPressed)
         {
             movement += -transform.right * walkingSpeed;
             hasInput = true;
         }
 
         // Jumping
-        if (jumpEnabled && Input.GetKey(jumpKey) && isGrounded()) 
+        if (jumpEnabled && Keyboard.current[jumpKey].isPressed && isGrounded()) 
         {
             movement += transform.up * jumpSpeed;
         }
@@ -73,7 +76,7 @@ public class PlayerMove : MonoBehaviour
           rb.constraints = 
             RigidbodyConstraints.FreezePositionX | 
             RigidbodyConstraints.FreezePositionZ |
-            RigidbodyConstraints.FreezeRotationY |
+            RigidbodyConstraints.FreezeRotationY | 
             RigidbodyConstraints.FreezeRotationZ;
         } else {
           rb.constraints = 
@@ -82,19 +85,19 @@ public class PlayerMove : MonoBehaviour
         }
 
         // maintain vertical speed
-        movement.y += rb.velocity.y;
+        movement.y += rb.linearVelocity.y;
 
         // apply movement to rigidbody
-        rb.velocity = movement ;
+        rb.linearVelocity = movement ;
     }
 
-    
-
     void Update() {
-        if (crouchEnabled && Input.GetKeyDown(crouchKey)) {
+        if (Keyboard.current == null) return;
+
+        if (crouchEnabled && Keyboard.current[crouchKey].wasPressedThisFrame) {
           // Crouching
           transform.localScale = new Vector3(transform.localScale.x, crouchHeight, transform.localScale.z);
-        } else if (crouchEnabled && Input.GetKeyUp(crouchKey)) {
+        } else if (crouchEnabled && Keyboard.current[crouchKey].wasReleasedThisFrame) {
           // Not crouching
           transform.localScale = new Vector3(transform.localScale.x, normalHeight, transform.localScale.z);
         }

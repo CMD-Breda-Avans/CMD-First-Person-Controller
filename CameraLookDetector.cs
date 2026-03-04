@@ -1,5 +1,4 @@
-/* 
- * CAMERA LOOK DETECTOR
+/* * CAMERA LOOK DETECTOR
  * Detects what the camera is looking at
  * If it is looking at something that has a collider, it will attempt 
  * to tell the MouseCursor script to change its cursor
@@ -9,17 +8,19 @@
 
 using UnityEngine;
 using System.Collections;
+using UnityEngine.InputSystem;
 
 public class CameraLookDetector : MonoBehaviour
 {
     Camera cam;
-    public MouseCursor mouseCursor;
+    public MouseCursors mouseCursors;
 
-    public KeyCode interactKey = KeyCode.E;
+    public Key interactKey = Key.E;
 
     public float maxInteractionDistance = 2.0f;
 
     ObjectInteraction currentLookTarget;
+
     void Start()
     {
         cam = GetComponent<Camera>();
@@ -28,6 +29,8 @@ public class CameraLookDetector : MonoBehaviour
 
     void Update()
     {
+        if (Keyboard.current == null) return;
+
         Ray ray = cam.ViewportPointToRay(new Vector3(0.5F, 0.5F, 0));
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, maxInteractionDistance))
@@ -35,21 +38,18 @@ public class CameraLookDetector : MonoBehaviour
         else
           LookAtInteractible(null);
 
-        if (Input.GetKeyDown(interactKey) && currentLookTarget != null)
+        if (Keyboard.current[interactKey].wasPressedThisFrame && currentLookTarget != null)
         {
           currentLookTarget.OnInteract();
         }
-
     }
 
     void LookAtInteractible(ObjectInteraction obj)
     {
       currentLookTarget = obj;
       if (obj != null && obj.cursor != null)
-        mouseCursor.SetCursor(obj.cursor);
+        mouseCursors.SetCursor(obj.cursor);
       else 
-        mouseCursor.SetCursor();
+        mouseCursors.SetCursor();
     }
-
-
 }
